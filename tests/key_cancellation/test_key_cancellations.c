@@ -4,8 +4,7 @@
 
 //clang-format off
 const key_cancellation_t PROGMEM key_cancellation_list[] = {
-    [0] = {KC_D, KC_A},
-    [1] = {KC_A, KC_D},
-    [2] = {KC_A, KC_F},
+    [0] = {KC_D, KC_A},  // D excludes A, restores A on D keyup
+    [1] = {KC_A, KC_D},  // A excludes D, restores D on A keyup
 };
 // clang-format on

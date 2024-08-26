@@ -66,6 +66,8 @@ __attribute__((weak)) bool process_key_cancellation_user(uint16_t keycode, keyre
  * @return false Stop processing keycodes, and don't send to host
  */
 bool process_key_cancellation(uint16_t keycode, keyrecord_t *record) {
+    static uint16_t excluded_key = KC_NO;
+
     if (record->event.pressed) {
         switch (keycode) {
             case QK_KEY_CANCELLATION_ON:
@@ -80,32 +82,28 @@ bool process_key_cancellation(uint16_t keycode, keyrecord_t *record) {
             default:
                 break;
         }
-    }
 
-    if (!keymap_config.key_cancellation_enable) {
-        return true;
-    }
+        if (!keymap_config.key_cancellation_enable) {
+            return true;
+        }
 
-    if (!record->event.pressed) {
-        return true;
-    }
-
-    // only supports basic keycodes
-    if (!IS_BASIC_KEYCODE(keycode)) {
-        return true;
-    }
-
-    if (!process_key_cancellation_user(keycode, record)) {
-        return true;
-    }
-
-    // loop through all the keyup and keydown events
-    for (uint16_t i = 0; i < key_cancellation_count(); i++) {
-        key_cancellation_t key_cancellation = key_cancellation_get(i);
-        if (keycode == key_cancellation.press) {
-            del_key(key_cancellation.unpress);
+        // Loop through all the key cancellation events
+        for (uint16_t i = 0; i < key_cancellation_count(); i++) {
+            key_cancellation_t key_cancellation = key_cancellation_get(i);
+            if (keycode == key_cancellation.press) {
+                // Exclude the key
+                del_key(key_cancellation.unpress);
+                excluded_key = key_cancellation.unpress;
+            }
+        }
+    } else {
+        // Key is released
+        if (keycode == excluded_key) {
+            add_key(excluded_key);  // Restore the excluded key
+            excluded_key = KC_NO;  // Reset the excluded key
         }
     }
 
     return true;
 }
+

@@ -36,7 +36,7 @@ TEST_F(KeyInterrupt, OnOffToggle) {
 }
 
 // Test that holding A, and then pressing D, releases A and sends only D
-TEST_F(KeyInterrupt, a_hold_d_key_cancellation) {
+TEST_F(KeyInterrupt, a_hold_d_key_exclusion) {
     TestDriver driver;
     KeymapKey  key_a(0, 0, 0, KC_A);
     KeymapKey  key_d(0, 1, 0, KC_D);
@@ -52,6 +52,12 @@ TEST_F(KeyInterrupt, a_hold_d_key_cancellation) {
     /* Press D key */
     EXPECT_REPORT(driver, (KC_D));
     key_d.press();
+    run_one_scan_loop();
+    VERIFY_AND_CLEAR(driver);
+
+    /* Release D key */
+    EXPECT_REPORT(driver, (KC_A));
+    key_d.release();
     run_one_scan_loop();
     VERIFY_AND_CLEAR(driver);
 }
